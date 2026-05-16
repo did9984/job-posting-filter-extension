@@ -1,16 +1,16 @@
 (() => {
-    if (window.__RECRUIT_AUTO_HIDE_CONTENT_V536_STRICT__) {
-        console.log("Recruit Auto Hide content.js v5.3.6 already installed");
+    if (window.__RECRUIT_JOB_POSTING_ANALYSIS_CONTENT_V536_STRICT__) {
+        console.log("Recruit Job Posting Analysis content.js v5.3.6 はすでに読み込み済みです");
         return;
     }
 
-    window.__RECRUIT_AUTO_HIDE_CONTENT_V536_STRICT__ = true;
-    window.__recruitAutoHideStop = false;
+    window.__RECRUIT_JOB_POSTING_ANALYSIS_CONTENT_V536_STRICT__ = true;
+    window.__jobPostingAnalysisStopRequested = false;
 
-    const BADGE_CLASS = "recruit-auto-hide-result-badge";
-    const MARK_CLASS = "recruit-auto-hide-card-mark";
-    const MAX_EN_HYOUBAN_FETCH = 100;
-    const STORAGE_KEY = "recruitAutoHideAnalysisCacheV536";
+    const BADGE_CLASS = "recruit-job-posting-analysis-result-badge";
+    const MARK_CLASS = "recruit-job-posting-analysis-card-mark";
+    const MAX_EN_HYOUBAN_PUBLIC_INFO_REFERENCE = 100;
+    const STORAGE_KEY = "jobPostingAnalysisCacheV536";
 
     const manualReviewRiskProfiles = [
         {
@@ -138,7 +138,7 @@
             const data = await chrome.storage.local.get(STORAGE_KEY);
             return data[STORAGE_KEY] || {};
         } catch (error) {
-            console.warn("analysis cache load failed", error);
+            console.warn("分析キャッシュの読み込みに失敗しました", error);
             return {};
         }
     }
@@ -149,7 +149,7 @@
                 [STORAGE_KEY]: cache
             });
         } catch (error) {
-            console.warn("analysis cache save failed", error);
+            console.warn("分析キャッシュの保存に失敗しました", error);
         }
     }
 
@@ -182,7 +182,7 @@
                 return (
                     isVisible(element) &&
                     text.includes("興味なし") &&
-                    element.dataset.recruitAutoHideChecked !== "true"
+                    element.dataset.jobPostingAnalysisChecked !== "true"
                 );
             });
     }
@@ -1392,7 +1392,7 @@
                 reviewCount: null,
                 employeeCount: null,
                 url: null,
-                reason: "empty response"
+                reason: "空のレスポンスです"
             };
         } catch (error) {
             return {
@@ -1406,7 +1406,7 @@
         }
     }
 
-    function applyEnHyoubanInfo(item, enInfo) {
+    function applyEnHyoubanPublicInfo(item, enInfo) {
         if (!enInfo) return item;
 
         item.enHyoubanFetchOk = !!enInfo.ok;
@@ -1428,21 +1428,21 @@
                 item.employeeCount = enInfo.employeeCount;
             }
 
-            item.reasons.push(`en-hyouban自動取得: 社員数${enInfo.employeeCount}名`);
+            item.reasons.push(`en-hyouban公開情報参照: 社員数${enInfo.employeeCount}名`);
         }
 
         if (typeof item.enHyoubanReviewCount === "number" && item.enHyoubanReviewCount <= 35) {
             item.score = Math.max(0, item.score - 10);
             item.weakNegativeCount++;
             item.hasLowEnHyoubanReviewCount = true;
-            item.reasons.push(`en-hyouban自動取得: 口コミ数${item.enHyoubanReviewCount}件のため-10`);
+            item.reasons.push(`en-hyouban公開情報参照: 口コミ数${item.enHyoubanReviewCount}件のため-10`);
         }
 
         if (typeof item.enHyoubanRating === "number" && item.enHyoubanRating <= 3.0) {
             item.score = Math.max(0, item.score - 15);
             item.strongNegativeCount++;
             item.hasLowEnHyoubanRating = true;
-            item.reasons.push(`en-hyouban自動取得: 評価${item.enHyoubanRating}のため-15`);
+            item.reasons.push(`en-hyouban公開情報参照: 評価${item.enHyoubanRating}のため-15`);
         }
 
         if (typeof item.enHyoubanEmployeeCount === "number") {
@@ -1526,7 +1526,7 @@
         return item;
     }
 
-    function isNonDevelopmentJobForAutoHide(item) {
+    function isNonDevelopmentJobForHideCandidate(item) {
         const javaLevel = item.javaCareerLevel || "NONE";
 
         if (javaLevel === "STRONG") return false;
@@ -1549,7 +1549,7 @@
         );
     }
 
-    function shouldAutoHideDuringScan(item) {
+    function shouldPrepareHideCandidateDuringAnalysis(item) {
         const ratingRisk =
             typeof item.enHyoubanRating === "number" &&
             item.enHyoubanRating <= 3.0;
@@ -1558,18 +1558,18 @@
             typeof item.enHyoubanEmployeeCount === "number" &&
             item.enHyoubanEmployeeCount <= 80;
 
-        const nonDevelopmentRisk = isNonDevelopmentJobForAutoHide(item);
+        const nonDevelopmentRisk = isNonDevelopmentJobForHideCandidate(item);
 
         if (ratingRisk) {
-            item.reasons.push(`調査中自動処理: en-hyouban評価${item.enHyoubanRating}が3.0以下`);
+            item.reasons.push(`調査中のユーザー確認済み処理: en-hyouban評価${item.enHyoubanRating}が3.0以下`);
         }
 
         if (employeeRisk) {
-            item.reasons.push(`調査中自動処理: 社員数${item.enHyoubanEmployeeCount}名が80名以下`);
+            item.reasons.push(`調査中のユーザー確認済み処理: 社員数${item.enHyoubanEmployeeCount}名が80名以下`);
         }
 
         if (nonDevelopmentRisk) {
-            item.reasons.push("調査中自動処理: 開発キャリアと関係が薄い求人");
+            item.reasons.push("調査中のユーザー確認済み処理: 開発キャリアと関係が薄い求人");
         }
 
         return ratingRisk || employeeRisk || nonDevelopmentRisk;
@@ -1688,7 +1688,7 @@
         }
 
         if (restoredCount > 0) {
-            console.log(`Recruit Auto Hide: restored ${restoredCount} badges from cache`);
+            console.log(`Recruit Job Posting Analysis: キャッシュから${restoredCount}件のバッジを復元しました`);
         }
 
         return restoredCount;
@@ -1719,7 +1719,7 @@
             });
     }
 
-    async function clickInterestNoneButtonSafely(button) {
+    async function executeUserConfirmedInterestNoneAction(button) {
         if (!button || !isVisible(button)) return false;
 
         button.scrollIntoView({
@@ -1729,7 +1729,7 @@
 
         await sleep(700);
 
-        if (window.__recruitAutoHideStop) return false;
+        if (window.__jobPostingAnalysisStopRequested) return false;
 
         button.click();
 
@@ -1745,7 +1745,7 @@
         return true;
     }
 
-    async function scanFilteredJobs(filterMode = "normal", autoHideDuringScan = false) {
+    async function analyzeVisibleJobPostings(filterMode = "normal", userConfirmedActionDuringAnalysis = false) {
         filterMode = normalizeFilterMode(filterMode);
         cleanupBadges();
 
@@ -1755,12 +1755,12 @@
         const hideCautionItems = [];
         const reviewItems = [];
         const keepItems = [];
-        const autoHiddenDuringScanItems = [];
+        const userConfirmedActionDuringAnalysisItems = [];
 
         let enFetchCount = 0;
 
         for (const button of buttons) {
-            if (window.__recruitAutoHideStop) break;
+            if (window.__jobPostingAnalysisStopRequested) break;
 
             const card = findJobCardFromButton(button);
             const cardText = card ? card.innerText : "";
@@ -1774,31 +1774,31 @@
             };
 
             const shouldFetch =
-                enFetchCount < MAX_EN_HYOUBAN_FETCH &&
+                enFetchCount < MAX_EN_HYOUBAN_PUBLIC_INFO_REFERENCE &&
                 !!companyName;
 
             if (shouldFetch) {
                 enFetchCount++;
                 const enInfo = await fetchEnHyoubanInfo(companyName);
-                item = applyEnHyoubanInfo(item, enInfo);
+                item = applyEnHyoubanPublicInfo(item, enInfo);
             } else {
                 item.enHyoubanFetchReason =
                     item.enHyoubanFetchReason ||
-                    `skip: limit ${MAX_EN_HYOUBAN_FETCH} or company name not found`;
+                    `スキップ: 上限${MAX_EN_HYOUBAN_PUBLIC_INFO_REFERENCE}件に到達、または会社名が見つかりませんでした`;
             }
 
-            if (autoHideDuringScan && shouldAutoHideDuringScan(item)) {
+            if (userConfirmedActionDuringAnalysis && shouldPrepareHideCandidateDuringAnalysis(item)) {
                 item.decision = "HIDE_SAFE";
                 item.confidence = "HIGH";
-                item.riskLevel = "AUTO_HIDE_DURING_SCAN";
+                item.riskLevel = "USER_CONFIRMED_ACTION_DURING_ANALYSIS";
 
-                const clicked = await clickInterestNoneButtonSafely(button);
+                const actionExecuted = await executeUserConfirmedInterestNoneAction(button);
 
-                if (clicked) {
-                    item.autoHiddenDuringScan = true;
-                    item.reasons.push("調査中に自動で興味なし処理済み");
-                    autoHiddenDuringScanItems.push(item);
-                    button.dataset.recruitAutoHideChecked = "true";
+                if (actionExecuted) {
+                    item.userConfirmedActionDuringAnalysis = true;
+                    item.reasons.push("調査中にユーザー確認済みの興味なし処理済み");
+                    userConfirmedActionDuringAnalysisItems.push(item);
+                    button.dataset.jobPostingAnalysisChecked = "true";
                 }
             }
 
@@ -1822,31 +1822,31 @@
             hideCautionCount: hideCautionItems.length,
             reviewCount: reviewItems.length,
             keepCount: keepItems.length,
-            autoHiddenDuringScanCount: autoHiddenDuringScanItems.length,
+            userConfirmedActionDuringAnalysisCount: userConfirmedActionDuringAnalysisItems.length,
             hideSafeItems,
             hideCautionItems,
             reviewItems,
             keepItems,
-            autoHiddenDuringScanItems
+            userConfirmedActionDuringAnalysisItems
         };
     }
 
-    async function clickFilteredInterestNoneButtons(maxClickCount = 10, filterMode = "normal", targetDecision = "HIDE_SAFE") {
+    async function executeUserConfirmedHideCandidateActions(maxActionCount = 10, filterMode = "normal", targetDecision = "HIDE_SAFE") {
         filterMode = normalizeFilterMode(filterMode);
-        window.__recruitAutoHideStop = false;
+        window.__jobPostingAnalysisStopRequested = false;
 
         const buttons = findInterestNoneButtons();
 
         let checkedCount = 0;
-        let clickedCount = 0;
+        let executedActionCount = 0;
         let skippedCautionCount = 0;
         let reviewCount = 0;
         let keepCount = 0;
 
-        const clickedItems = [];
+        const executedActionItems = [];
 
         for (const button of buttons) {
-            if (window.__recruitAutoHideStop) break;
+            if (window.__jobPostingAnalysisStopRequested) break;
 
             const card = findJobCardFromButton(button);
             const cardText = card ? card.innerText : "";
@@ -1857,114 +1857,114 @@
 
             if (judge.decision === "KEEP") {
                 keepCount++;
-                button.dataset.recruitAutoHideChecked = "true";
+                button.dataset.jobPostingAnalysisChecked = "true";
                 continue;
             }
 
             if (judge.decision === "REVIEW") {
                 reviewCount++;
-                button.dataset.recruitAutoHideChecked = "true";
+                button.dataset.jobPostingAnalysisChecked = "true";
                 continue;
             }
 
             if (targetDecision === "HIDE_SAFE" && judge.decision !== "HIDE_SAFE") {
                 if (judge.decision === "HIDE_CAUTION") skippedCautionCount++;
-                button.dataset.recruitAutoHideChecked = "true";
+                button.dataset.jobPostingAnalysisChecked = "true";
                 continue;
             }
 
             if (targetDecision === "HIDE_CAUTION" && judge.decision !== "HIDE_CAUTION") {
-                button.dataset.recruitAutoHideChecked = "true";
+                button.dataset.jobPostingAnalysisChecked = "true";
                 continue;
             }
 
-            if (clickedCount >= maxClickCount) break;
+            if (executedActionCount >= maxActionCount) break;
             if (!isVisible(button)) continue;
 
-            clickedItems.push({
+            executedActionItems.push({
                 title,
                 ...judge
             });
 
-            const clicked = await clickInterestNoneButtonSafely(button);
+            const actionExecuted = await executeUserConfirmedInterestNoneAction(button);
 
-            if (clicked) {
-                clickedCount++;
+            if (actionExecuted) {
+                executedActionCount++;
             }
         }
 
         return {
             checkedCount,
-            clickedCount,
+            executedActionCount,
             skippedCautionCount,
             reviewCount,
             keepCount,
-            clickedItems
+            executedActionItems
         };
     }
 
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-        if (request.type === "SCAN_INTEREST_NONE") {
+        if (request.type === "RUN_JOB_POSTING_ANALYSIS") {
             const filterMode = normalizeFilterMode(request.filterMode || "normal");
-            const autoHideDuringScan = !!request.autoHideDuringScan;
+            const userConfirmedActionDuringAnalysis = !!request.userConfirmedActionDuringAnalysis;
 
-            scanFilteredJobs(filterMode, autoHideDuringScan).then(result => {
+            analyzeVisibleJobPostings(filterMode, userConfirmedActionDuringAnalysis).then(result => {
                 sendResponse({
                     message:
-                        `필터 모드: ${filterMode}\n` +
-                        `현재 화면의 興味なし 버튼: ${result.total}개\n` +
-                        `HIDE_SAFE 자동 처리 가능: ${result.hideSafeCount}개\n` +
-                        `HIDE_CAUTION 숨기기 전 확인: ${result.hideCautionCount}개\n` +
-                        `REVIEW 수동 확인: ${result.reviewCount}개\n` +
-                        `KEEP 유지: ${result.keepCount}개\n` +
-                        `조사 중 자동 興味なし: ${result.autoHiddenDuringScanCount}개\n` +
-                        `※ en-hyouban 조회는 최대 ${MAX_EN_HYOUBAN_FETCH}개`,
+                        `フィルターモード: ${filterMode}\n` +
+                        `現在画面の「興味なし」ボタン: ${result.total}件\n` +
+                        `HIDE_SAFE処理候補: ${result.hideSafeCount}件\n` +
+                        `HIDE_CAUTION事前確認候補: ${result.hideCautionCount}件\n` +
+                        `REVIEW手動確認候補: ${result.reviewCount}件\n` +
+                        `KEEP維持候補: ${result.keepCount}件\n` +
+                        `分析中のユーザー確認済み「興味なし」処理: ${result.userConfirmedActionDuringAnalysisCount}件\n` +
+                        `※ en-hyouban公開情報参照は最大${MAX_EN_HYOUBAN_PUBLIC_INFO_REFERENCE}件`,
                     hideSafeItems: result.hideSafeItems,
                     hideCautionItems: result.hideCautionItems,
                     reviewItems: result.reviewItems,
                     keepItems: result.keepItems,
-                    autoHiddenDuringScanItems: result.autoHiddenDuringScanItems
+                    userConfirmedActionDuringAnalysisItems: result.userConfirmedActionDuringAnalysisItems
                 });
             });
 
             return true;
         }
 
-        if (request.type === "START_INTEREST_NONE") {
-            const maxClickCount = Number(request.maxClickCount || 10);
+        if (request.type === "EXECUTE_USER_CONFIRMED_HIDE_CANDIDATES") {
+            const maxActionCount = Number(request.maxActionCount || 10);
             const filterMode = normalizeFilterMode(request.filterMode || "normal");
             const targetDecision = request.targetDecision || "HIDE_SAFE";
 
-            clickFilteredInterestNoneButtons(maxClickCount, filterMode, targetDecision).then(result => {
+            executeUserConfirmedHideCandidateActions(maxActionCount, filterMode, targetDecision).then(result => {
                 sendResponse({
                     message:
-                        `필터링 자동 클릭 완료\n` +
-                        `필터 모드: ${filterMode}\n` +
-                        `처리 대상: ${targetDecision}\n` +
-                        `확인한 공고: ${result.checkedCount}개\n` +
-                        `興味なし 처리: ${result.clickedCount}개\n` +
-                        `HIDE_CAUTION 스킵: ${result.skippedCautionCount}개\n` +
-                        `REVIEW 스킵: ${result.reviewCount}개\n` +
-                        `KEEP 유지: ${result.keepCount}개`,
-                    clickedItems: result.clickedItems
+                        `ユーザー確認に基づく処理が完了しました\n` +
+                        `フィルターモード: ${filterMode}\n` +
+                        `処理対象: ${targetDecision}\n` +
+                        `確認した求人: ${result.checkedCount}件\n` +
+                        `「興味なし」処理: ${result.executedActionCount}件\n` +
+                        `HIDE_CAUTIONスキップ: ${result.skippedCautionCount}件\n` +
+                        `REVIEWスキップ: ${result.reviewCount}件\n` +
+                        `KEEP維持: ${result.keepCount}件`,
+                    executedActionItems: result.executedActionItems
                 });
             });
 
             return true;
         }
 
-        if (request.type === "STOP_INTEREST_NONE") {
-            window.__recruitAutoHideStop = true;
+        if (request.type === "STOP_JOB_POSTING_ANALYSIS") {
+            window.__jobPostingAnalysisStopRequested = true;
 
             sendResponse({
-                message: "정지 요청 완료"
+                message: "停止リクエストを受け付けました"
             });
 
             return true;
         }
     });
 
-    console.log("Recruit Auto Hide content.js v5.3.6 strict KEEP + low-code/Microsoft cloud intro filter loaded");
+    console.log("Recruit Job Posting Analysis content.js v5.3.6 を読み込みました");
 
     setTimeout(() => {
         restoreBadgesFromCache();

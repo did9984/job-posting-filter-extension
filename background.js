@@ -49,7 +49,7 @@ async function runScript(tabId, func, args = []) {
     return result && result[0] ? result[0].result : null;
 }
 
-async function findEnHyoubanUrl(companyName) {
+async function findEnHyoubanPublicInfoUrl(companyName) {
     const cleanName = cleanCompanyName(companyName);
 
     if (!cleanName) return null;
@@ -103,12 +103,12 @@ async function findEnHyoubanUrl(companyName) {
         try {
             await chrome.tabs.remove(tab.id);
         } catch (e) {
-            console.warn("Google tab remove failed", e);
+            console.warn("一時検索タブを閉じられませんでした", e);
         }
     }
 }
 
-async function scrapeEnHyouban(url, companyName) {
+async function referenceEnHyoubanPublicInfo(url, companyName) {
     if (!url) {
         return {
             ok: false,
@@ -117,7 +117,7 @@ async function scrapeEnHyouban(url, companyName) {
             rating: null,
             reviewCount: null,
             employeeCount: null,
-            reason: "en-hyouban URL not found"
+            reason: "en-hyoubanのURLが見つかりませんでした"
         };
     }
 
@@ -226,7 +226,7 @@ async function scrapeEnHyouban(url, companyName) {
         try {
             await chrome.tabs.remove(tab.id);
         } catch (e) {
-            console.warn("en-hyouban tab remove failed", e);
+            console.warn("一時参照タブを閉じられませんでした", e);
         }
     }
 }
@@ -242,7 +242,7 @@ async function fetchEnHyoubanInfo(companyName) {
             rating: null,
             reviewCount: null,
             employeeCount: null,
-            reason: "empty company name"
+            reason: "会社名が空です"
         };
     }
 
@@ -253,8 +253,8 @@ async function fetchEnHyoubanInfo(companyName) {
         };
     }
 
-    const url = await findEnHyoubanUrl(companyName);
-    const result = await scrapeEnHyouban(url, companyName);
+    const url = await findEnHyoubanPublicInfoUrl(companyName);
+    const result = await referenceEnHyoubanPublicInfo(url, companyName);
 
     EN_HYOUBAN_CACHE.set(key, result);
 

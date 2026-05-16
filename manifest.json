@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Recruit Auto Hide",
+  "name": "Job Posting Analysis Assistant",
   "version": "5.3.1",
-  "description": "Recruit Agent求人を分類し、en-hyoubanから評価・口コミ数・社員数を自動取得します。",
+  "description": "求人情報を分類し、en-hyoubanなどの公開情報を参考に評価・口コミ数・社員数を表示します。",
   "permissions": [
     "activeTab",
     "scripting",

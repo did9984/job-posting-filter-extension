@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>Recruit Auto Hide</title>
+    <title>Job Posting Analysis Assistant</title>
     <style>
         body {
             width: 440px;
@@ -174,52 +174,52 @@
 </head>
 <body>
 
-<h1>Recruit Auto Hide v5.2</h1>
+<h1>Job Posting Analysis Assistant v5.2</h1>
 
 <p>
-    求人を HIDE_SAFE / HIDE_CAUTION / REVIEW / KEEP に分類します。<br>
-    en-hyoubanから評価・口コミ数・社員数を最大30件まで自動取得します。
+    求人情報を HIDE_SAFE / HIDE_CAUTION / REVIEW / KEEP に分類します。<br>
+    en-hyoubanなどの公開情報を参考に、評価・口コミ数・社員数を最大30件まで表示します。
 </p>
 
-<label for="filterModeSelect">필터 강도</label>
+<label for="filterModeSelect">フィルター強度</label>
 <select id="filterModeSelect">
-    <option value="conservative">보수적 - 확실한 것만 제외</option>
-    <option value="normal" selected>보통 - 추천 기준</option>
-    <option value="aggressive">공격적 - 애매한 공고도 제외</option>
+    <option value="conservative">保守的 - 確実な求人のみ候補にする</option>
+    <option value="normal" selected>通常 - 推奨設定</option>
+    <option value="aggressive">積極的 - 判断が難しい求人も候補にする</option>
 </select>
 
-<label for="viewModeSelect">표시 그룹</label>
+<label for="viewModeSelect">表示グループ</label>
 <select id="viewModeSelect">
-    <option value="all" selected>전체 보기</option>
-    <option value="hide_safe">HIDE_SAFE만 보기</option>
-    <option value="hide_caution">HIDE_CAUTION만 보기</option>
-    <option value="review">REVIEW만 보기</option>
-    <option value="keep">KEEP만 보기</option>
+    <option value="all" selected>すべて表示</option>
+    <option value="hide_safe">HIDE_SAFEのみ表示</option>
+    <option value="hide_caution">HIDE_CAUTIONのみ表示</option>
+    <option value="review">REVIEWのみ表示</option>
+    <option value="keep">KEEPのみ表示</option>
 </select>
 
-<label for="maxClickCountSelect">처리 개수</label>
-<select id="maxClickCountSelect">
-    <option value="5">5개만 처리</option>
-    <option value="10" selected>10개만 처리</option>
-    <option value="20">20개만 처리</option>
-    <option value="9999">전체 처리</option>
+<label for="maxActionCountSelect">ユーザー確認に基づく処理件数</label>
+<select id="maxActionCountSelect">
+    <option value="5">5件のみ処理</option>
+    <option value="10" selected>10件のみ処理</option>
+    <option value="20">20件のみ処理</option>
+    <option value="9999">すべて処理</option>
 </select>
 
 <label class="checkbox-label">
-    <input type="checkbox" id="autoHideDuringScanCheckbox">
-    조사 중 위험 공고는 바로 興味なし 처리
+    <input type="checkbox" id="userConfirmedActionDuringAnalysisCheckbox">
+    分析中に HIDE_SAFE 候補をユーザー確認基準で「興味なし」処理する
 </label>
 
 <div class="small-note">
-    조건: 評価3.0以下 / 社員数80名以下 / 개발과 관련 없는 구인
+    基準: 評価3.0以下 / 社員数80名以下 / 開発キャリアとの関連性が低い求人
 </div>
 
-<button id="scanBtn">분석하기</button>
-<button id="startBtn">HIDE_SAFE만 興味なし 처리</button>
-<button id="startCautionBtn">HIDE_CAUTION도 興味なし 처리</button>
-<button id="stopBtn">정지</button>
+<button id="scanBtn">分析する</button>
+<button id="startBtn">HIDE_SAFE候補をユーザー確認処理</button>
+<button id="startCautionBtn">HIDE_CAUTION候補もユーザー確認処理</button>
+<button id="stopBtn">停止</button>
 
-<div id="status">대기 중</div>
+<div id="status">待機中</div>
 <div id="preview"></div>
 
 <script src="popup.js"></script>

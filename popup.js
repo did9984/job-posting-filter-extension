@@ -1,4 +1,4 @@
-const maxClickCountSelect = document.getElementById("maxClickCountSelect");
+const maxActionCountSelect = document.getElementById("maxActionCountSelect");
 const filterModeSelect = document.getElementById("filterModeSelect");
 const viewModeSelect = document.getElementById("viewModeSelect");
 const previewEl = document.getElementById("preview");
@@ -7,7 +7,7 @@ const scanBtn = document.getElementById("scanBtn");
 const startBtn = document.getElementById("startBtn");
 const startCautionBtn = document.getElementById("startCautionBtn");
 const stopBtn = document.getElementById("stopBtn");
-const autoHideDuringScanCheckbox = document.getElementById("autoHideDuringScanCheckbox");
+const userConfirmedActionDuringAnalysisCheckbox = document.getElementById("userConfirmedActionDuringAnalysisCheckbox");
 
 let lastAnalysisResult = null;
 
@@ -18,7 +18,7 @@ async function sendMessageToCurrentTab(message) {
     });
 
     if (!tab || !tab.id) {
-        statusEl.textContent = "현재 탭을 찾을 수 없습니다.";
+        statusEl.textContent = "現在のタブを取得できませんでした。";
         return null;
     }
 
@@ -29,8 +29,8 @@ async function sendMessageToCurrentTab(message) {
 
     if (!isRecruitPage) {
         statusEl.textContent =
-            "현재 탭이 리쿠르트 페이지가 아닙니다.\n\n" +
-            `현재 URL:\n${currentUrl}`;
+            "現在のタブは対象ページではありません。\n\n" +
+            `現在のURL:\n${currentUrl}`;
         return null;
     }
 
@@ -40,10 +40,10 @@ async function sendMessageToCurrentTab(message) {
 
     try {
         const response = await trySend();
-        statusEl.textContent = response?.message || "처리 완료";
+        statusEl.textContent = response?.message || "処理が完了しました。";
         return response;
     } catch (firstError) {
-        console.warn("First send failed. Injecting content.js...", firstError);
+        console.warn("初回メッセージ送信に失敗しました。content.jsを再注入します。", firstError);
 
         try {
             await chrome.scripting.executeScript({
@@ -54,20 +54,20 @@ async function sendMessageToCurrentTab(message) {
             await new Promise(resolve => setTimeout(resolve, 800));
 
             const response = await trySend();
-            statusEl.textContent = response?.message || "처리 완료";
+            statusEl.textContent = response?.message || "処理が完了しました。";
             return response;
         } catch (secondError) {
-            console.error("content.js 연결 실패:", secondError);
+            console.error("content.jsとの接続に失敗しました。", secondError);
 
             statusEl.textContent =
-                "content.js 연결 실패\n\n" +
-                "가능성이 높은 원인:\n" +
-                "1. 확장 프로그램 새로고침 안 함\n" +
-                "2. 리쿠르트 페이지 새로고침 안 함\n" +
-                "3. content.js 문법 에러\n" +
-                "4. manifest matches 불일치\n\n" +
-                `현재 URL:\n${currentUrl}\n\n` +
-                `에러:\n${secondError.message}`;
+                "content.jsとの接続に失敗しました。\n\n" +
+                "想定される原因:\n" +
+                "1. 拡張機能を再読み込みしていない\n" +
+                "2. 対象ページを再読み込みしていない\n" +
+                "3. content.jsに構文エラーがある\n" +
+                "4. manifestのmatches設定が一致していない\n\n" +
+                `現在のURL:\n${currentUrl}\n\n` +
+                `エラー:\n${secondError.message}`;
 
             return null;
         }
@@ -79,7 +79,7 @@ function decisionClass(decision) {
 }
 
 function yesNo(value) {
-    return value ? "있음" : "없음";
+    return value ? "あり" : "なし";
 }
 
 function valueOrUnknown(value, suffix = "") {
@@ -113,15 +113,15 @@ function createCard(item, index) {
     risk.innerHTML =
         `会社名: <strong>${item.companyName || "不明"}</strong><br>` +
         `Java判定: <strong>${item.javaCareerLevel || "UNKNOWN"}</strong><br>` +
-        `en-hyouban取得: <strong>${yesNo(item.enHyoubanFetchOk)}</strong><br>` +
+        `en-hyouban公開情報参照: <strong>${yesNo(item.enHyoubanFetchOk)}</strong><br>` +
         `en-hyouban評価: <strong>${valueOrUnknown(item.enHyoubanRating)}</strong><br>` +
         `en-hyouban口コミ数: <strong>${valueOrUnknown(item.enHyoubanReviewCount, "件")}</strong><br>` +
         `en-hyouban社員数: <strong>${valueOrUnknown(item.enHyoubanEmployeeCount, "名")}</strong><br>` +
         `口コミ35件以下: <strong>${yesNo(item.hasLowEnHyoubanReviewCount)}</strong><br>` +
         `評価3.0以下: <strong>${yesNo(item.hasLowEnHyoubanRating)}</strong><br>` +
-        `社員数80以下: <strong>${yesNo(item.hasVeryLowEmployeeCount)}</strong><br>` +
-        `社員数100未満: <strong>${yesNo(item.hasLowEmployeeCount)}</strong><br>` +
-        `社員数300以上: <strong>${yesNo(item.hasLargeEmployeeCount)}</strong><br>` +
+        `社員数80名以下: <strong>${yesNo(item.hasVeryLowEmployeeCount)}</strong><br>` +
+        `社員数100名未満: <strong>${yesNo(item.hasLowEmployeeCount)}</strong><br>` +
+        `社員数300名以上: <strong>${yesNo(item.hasLargeEmployeeCount)}</strong><br>` +
         `小規模企業: <strong>${yesNo(item.hasSmallCompanyRisk)}</strong><br>` +
         `会社情報不足: <strong>${yesNo(item.hasCompanyInfoRisk)}</strong><br>` +
         `契約リスク: <strong>${yesNo(item.hasContractRisk)}</strong><br>` +
@@ -130,8 +130,8 @@ function createCard(item, index) {
         `インフラ/非開発リスク: <strong>${yesNo(item.hasInfraRisk)}</strong><br>` +
         `経験ミスマッチ: <strong>${item.experienceMismatchLevel || "NONE"}</strong><br>` +
         `レビュー臭: <strong>${item.reviewSmellRiskLevel || "NONE"}</strong><br>` +
-        `調査中自動処理: <strong>${yesNo(item.autoHiddenDuringScan)}</strong><br>` +
-        `取得理由: <strong>${item.enHyoubanFetchReason || "なし"}</strong>`;
+        `分析中のユーザー確認済み処理: <strong>${yesNo(item.userConfirmedActionDuringAnalysis)}</strong><br>` +
+        `参照理由: <strong>${item.enHyoubanFetchReason || "なし"}</strong>`;
 
     const reasons = document.createElement("div");
     reasons.className = "preview-reason";
@@ -173,7 +173,7 @@ function renderAnalysis(result) {
     previewEl.innerHTML = "";
 
     if (!result) {
-        previewEl.innerHTML = `<div class="preview-section-title">분석 결과 없음</div>`;
+        previewEl.innerHTML = `<div class="preview-section-title">分析結果なし</div>`;
         return;
     }
 
@@ -181,7 +181,8 @@ function renderAnalysis(result) {
     const hideCautionItems = result.hideCautionItems || [];
     const reviewItems = result.reviewItems || [];
     const keepItems = result.keepItems || [];
-    const autoHiddenDuringScanItems = result.autoHiddenDuringScanItems || [];
+    const userConfirmedActionDuringAnalysisItems =
+        result.userConfirmedActionDuringAnalysisItems || [];
 
     const allItems = [
         ...hideSafeItems,
@@ -201,99 +202,106 @@ function renderAnalysis(result) {
     const summary = document.createElement("div");
     summary.className = "preview-section-title";
     summary.innerHTML =
-        `분석 결과<br>` +
-        `HIDE_SAFE: ${hideSafeItems.length}건 / ` +
-        `HIDE_CAUTION: ${hideCautionItems.length}건 / ` +
-        `REVIEW: ${reviewItems.length}건 / ` +
-        `KEEP: ${keepItems.length}건<br>` +
-        `조사 중 자동 興味なし: ${autoHiddenDuringScanItems.length}건<br>` +
-        `en-hyouban取得成功: ${enFetchedCount}건 / ` +
-        `口コミ35件以下: ${lowReviewCount}건 / ` +
-        `評価3.0以下: ${lowRatingCount}건<br>` +
-        `社員数取得: ${employeeFetchedCount}건 / ` +
-        `社員数80以下: ${verySmallEmployeeCount}건 / ` +
-        `社員数100未満: ${smallEmployeeCount}건 / ` +
-        `社員数300以上: ${largeEmployeeCount}건`;
+        `分析結果<br>` +
+        `HIDE_SAFE: ${hideSafeItems.length}件 / ` +
+        `HIDE_CAUTION: ${hideCautionItems.length}件 / ` +
+        `REVIEW: ${reviewItems.length}件 / ` +
+        `KEEP: ${keepItems.length}件<br>` +
+        `分析中のユーザー確認済み処理: ${userConfirmedActionDuringAnalysisItems.length}件<br>` +
+        `en-hyouban公開情報参照成功: ${enFetchedCount}件 / ` +
+        `口コミ35件以下: ${lowReviewCount}件 / ` +
+        `評価3.0以下: ${lowRatingCount}件<br>` +
+        `社員数参照: ${employeeFetchedCount}件 / ` +
+        `社員数80名以下: ${verySmallEmployeeCount}件 / ` +
+        `社員数100名未満: ${smallEmployeeCount}件 / ` +
+        `社員数300名以上: ${largeEmployeeCount}件`;
 
     previewEl.appendChild(summary);
 
     const viewMode = viewModeSelect.value;
 
     if (viewMode === "all") {
-        appendSection(`조사 중 자동 興味なし 처리: ${autoHiddenDuringScanItems.length}건`, "hide_safe", autoHiddenDuringScanItems);
-        appendSection(`HIDE_SAFE: ${hideSafeItems.length}건`, "hide_safe", hideSafeItems);
-        appendSection(`HIDE_CAUTION: ${hideCautionItems.length}건`, "hide_caution", hideCautionItems);
-        appendSection(`REVIEW: ${reviewItems.length}건`, "review", reviewItems);
-        appendSection(`KEEP: ${keepItems.length}건`, "keep", keepItems);
+        appendSection(
+            `分析中のユーザー確認済み処理: ${userConfirmedActionDuringAnalysisItems.length}件`,
+            "hide_safe",
+            userConfirmedActionDuringAnalysisItems
+        );
+        appendSection(`HIDE_SAFE: ${hideSafeItems.length}件`, "hide_safe", hideSafeItems);
+        appendSection(`HIDE_CAUTION: ${hideCautionItems.length}件`, "hide_caution", hideCautionItems);
+        appendSection(`REVIEW: ${reviewItems.length}件`, "review", reviewItems);
+        appendSection(`KEEP: ${keepItems.length}件`, "keep", keepItems);
         return;
     }
 
     if (viewMode === "hide_safe") {
-        appendSection(`HIDE_SAFE: ${hideSafeItems.length}건`, "hide_safe", hideSafeItems);
+        appendSection(`HIDE_SAFE: ${hideSafeItems.length}件`, "hide_safe", hideSafeItems);
         return;
     }
 
     if (viewMode === "hide_caution") {
-        appendSection(`HIDE_CAUTION: ${hideCautionItems.length}건`, "hide_caution", hideCautionItems);
+        appendSection(`HIDE_CAUTION: ${hideCautionItems.length}件`, "hide_caution", hideCautionItems);
         return;
     }
 
     if (viewMode === "review") {
-        appendSection(`REVIEW: ${reviewItems.length}건`, "review", reviewItems);
+        appendSection(`REVIEW: ${reviewItems.length}件`, "review", reviewItems);
         return;
     }
 
     if (viewMode === "keep") {
-        appendSection(`KEEP: ${keepItems.length}건`, "keep", keepItems);
+        appendSection(`KEEP: ${keepItems.length}件`, "keep", keepItems);
     }
 }
 
-function renderClickedItems(items) {
+function renderProcessedItems(items) {
     previewEl.innerHTML = "";
 
     if (!items || items.length === 0) {
         previewEl.innerHTML = `
             <div class="preview-section-title">
-                이번 실행에서 처리된 공고가 없습니다.
+                今回処理された求人はありません。
             </div>
         `;
         return;
     }
 
-    appendSection(`이번에 興味なし 처리한 공고: ${items.length}건`, "hide_safe", items);
+    appendSection(`今回「興味なし」処理した求人: ${items.length}件`, "hide_safe", items);
 }
 
 scanBtn.addEventListener("click", async () => {
-    const autoHideDuringScan = !!autoHideDuringScanCheckbox?.checked;
+    const userConfirmedActionDuringAnalysis =
+        !!userConfirmedActionDuringAnalysisCheckbox?.checked;
 
-    if (autoHideDuringScan) {
+    if (userConfirmedActionDuringAnalysis) {
         const ok = confirm(
-            "조사 중 자동 興味なし 처리를 실행합니다.\n\n" +
-            "자동 처리 조건:\n" +
-            "・en-hyouban 評価 3.0 이하\n" +
-            "・en-hyouban 社員数 80명 이하\n" +
-            "・개발과 관련 없는 구인\n\n" +
-            "이 조건에 걸린 공고는 분석 중 바로 興味なし 처리됩니다.\n" +
-            "계속할까요?"
+            "分析中にユーザー確認基準で「興味なし」処理を実行します。\n\n" +
+            "処理条件:\n" +
+            "・en-hyouban 評価 3.0以下\n" +
+            "・en-hyouban 社員数 80名以下\n" +
+            "・開発キャリアとの関連性が低い求人\n\n" +
+            "この条件に該当する求人は、分析中に「興味なし」候補として処理されます。\n" +
+            "続行しますか？"
         );
 
         if (!ok) {
-            statusEl.textContent = "취소했습니다.";
+            statusEl.textContent = "キャンセルしました。";
             return;
         }
     }
 
     statusEl.textContent =
-        "분석 중...\n" +
-        "en-hyouban 자동 조회 때문에 시간이 걸릴 수 있습니다.\n" +
-        (autoHideDuringScan ? "위험 공고는 조사 중 바로 興味なし 처리합니다." : "");
+        "分析中...\n" +
+        "en-hyoubanの公開情報参照に時間がかかる場合があります。\n" +
+        (userConfirmedActionDuringAnalysis
+            ? "対象求人はユーザー確認基準で「興味なし」処理します。"
+            : "");
 
     previewEl.innerHTML = "";
 
     const response = await sendMessageToCurrentTab({
-        type: "SCAN_INTEREST_NONE",
+        type: "RUN_JOB_POSTING_ANALYSIS",
         filterMode: filterModeSelect.value,
-        autoHideDuringScan
+        userConfirmedActionDuringAnalysis
     });
 
     if (!response) return;
@@ -303,48 +311,48 @@ scanBtn.addEventListener("click", async () => {
 });
 
 startBtn.addEventListener("click", async () => {
-    const maxClickCount = Number(maxClickCountSelect.value);
+    const maxActionCount = Number(maxActionCountSelect.value);
     const filterMode = filterModeSelect.value;
 
     const ok = confirm(
-        `HIDE_SAFE만 최대 ${maxClickCount === 9999 ? "전체" : maxClickCount + "개"} 처리합니다.\n계속할까요?`
+        `HIDE_SAFE候補を最大${maxActionCount === 9999 ? "すべて" : maxActionCount + "件"}処理します。\n続行しますか？`
     );
 
     if (!ok) return;
 
     const response = await sendMessageToCurrentTab({
-        type: "START_INTEREST_NONE",
-        maxClickCount,
+        type: "EXECUTE_USER_CONFIRMED_HIDE_CANDIDATES",
+        maxActionCount,
         filterMode,
         targetDecision: "HIDE_SAFE"
     });
 
-    renderClickedItems(response?.clickedItems || []);
+    renderProcessedItems(response?.processedItems || []);
 });
 
 startCautionBtn.addEventListener("click", async () => {
-    const maxClickCount = Number(maxClickCountSelect.value);
+    const maxActionCount = Number(maxActionCountSelect.value);
     const filterMode = filterModeSelect.value;
 
     const ok = confirm(
-        `주의: HIDE_CAUTION도 최대 ${maxClickCount === 9999 ? "전체" : maxClickCount + "개"} 처리합니다.\n정말 실행할까요?`
+        `注意: HIDE_CAUTION候補も最大${maxActionCount === 9999 ? "すべて" : maxActionCount + "件"}処理します。\n本当に実行しますか？`
     );
 
     if (!ok) return;
 
     const response = await sendMessageToCurrentTab({
-        type: "START_INTEREST_NONE",
-        maxClickCount,
+        type: "EXECUTE_USER_CONFIRMED_HIDE_CANDIDATES",
+        maxActionCount,
         filterMode,
         targetDecision: "HIDE_CAUTION"
     });
 
-    renderClickedItems(response?.clickedItems || []);
+    renderProcessedItems(response?.processedItems || []);
 });
 
 stopBtn.addEventListener("click", async () => {
     await sendMessageToCurrentTab({
-        type: "STOP_INTEREST_NONE"
+        type: "STOP_JOB_POSTING_ANALYSIS"
     });
 });
 
