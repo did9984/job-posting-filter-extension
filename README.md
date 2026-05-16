@@ -10,6 +10,20 @@ Project Name: Job Posting Filter Extension
 
 単純なキーワード検索ではなく、自分の転職活動で重視している条件をルール化し、求人確認作業を効率化することを目的としています。
 
+## 画面イメージ
+
+求人一覧ページ上に判定バッジを表示し、Chrome 拡張機能の popup から分析条件やユーザー確認処理を操作する画面イメージです。
+
+実際の求人情報・企業名・サービス名などは、ポートフォリオ掲載用に匿名化しています。
+
+<p align="center">
+  <img src="./screenshots/job-posting-analysis-demo.png" alt="求人票分析・分類支援 Chrome拡張機能の画面イメージ" width="900">
+</p>
+
+<p align="center">
+  <sub>求人カードに分類結果・スコア・Java 判定・リスク理由を表示し、popup から分析条件を操作できるようにしています。</sub>
+</p>
+
 ## 開発背景
 
 転職活動を進める中で、毎日多くの求人を確認する必要がありました。
@@ -74,6 +88,8 @@ Project Name: Job Posting Filter Extension
 
 ```text
 job-posting-filter-extension
+├── screenshots
+│   └── job-posting-analysis-demo.png
 ├── manifest.json
 ├── background.js
 ├── content.js
@@ -192,11 +208,3 @@ content script、background service worker、popup の役割を分け、chrome.r
 外部情報については、公開ページ上の情報参照補助として利用しており、取得結果は求人判断の補助材料として扱っています。
 
 また、ユーザー操作を伴う処理については、誤操作を防ぐためユーザー確認後に実行する設計にしています。
-
-## 画面イメージ
-
-以下は、求人一覧ページ上に判定バッジを表示し、Chrome 拡張機能の popup から分析条件やユーザー確認処理を操作する画面イメージです。
-
-実際の求人情報・企業名・サービス名などは、ポートフォリオ掲載用に匿名化しています。
-
-![求人票分析・分類支援 Chrome拡張機能の画面イメージ](./screenshots/job-posting-analysis-demo.png)
