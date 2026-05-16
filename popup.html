@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Recruit Auto Hide</title>
+    <style>
+        body {
+            width: 440px;
+            padding: 16px;
+            font-family: "Segoe UI", "Noto Sans JP", sans-serif;
+            background: #f9fafb;
+            color: #111827;
+        }
+
+        h1 {
+            font-size: 18px;
+            margin: 0 0 12px;
+        }
+
+        p {
+            font-size: 13px;
+            color: #6b7280;
+            line-height: 1.6;
+        }
+
+        label {
+            display: block;
+            margin-top: 12px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            border-radius: 10px;
+            border: 1px solid #d1d5db;
+            background: white;
+        }
+
+        button {
+            width: 100%;
+            padding: 11px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        #scanBtn {
+            background: #e5e7eb;
+            color: #111827;
+        }
+
+        #startBtn {
+            background: #2563eb;
+            color: white;
+        }
+
+        #startCautionBtn {
+            background: #f97316;
+            color: white;
+        }
+
+        #stopBtn {
+            background: #ef4444;
+            color: white;
+        }
+
+        #status {
+            margin-top: 12px;
+            font-size: 13px;
+            color: #374151;
+            white-space: pre-line;
+        }
+
+        #preview {
+            margin-top: 14px;
+            max-height: 560px;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+
+        .preview-section-title {
+            margin-top: 12px;
+            font-weight: 900;
+            color: #111827;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 6px;
+            line-height: 1.6;
+        }
+
+        .preview-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 10px;
+            margin-top: 10px;
+        }
+
+        .preview-title {
+            font-weight: 800;
+            color: #111827;
+            margin-bottom: 6px;
+            line-height: 1.5;
+        }
+
+        .preview-score {
+            color: #2563eb;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .preview-decision {
+            font-weight: 900;
+            margin-bottom: 6px;
+        }
+
+        .preview-confidence {
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: #4b5563;
+            line-height: 1.5;
+        }
+
+        .preview-risk {
+            margin-top: 6px;
+            padding: 7px;
+            border-radius: 8px;
+            background: #f3f4f6;
+            color: #374151;
+            line-height: 1.6;
+        }
+
+        .hide_safe {
+            color: #dc2626;
+        }
+
+        .hide_caution {
+            color: #ea580c;
+        }
+
+        .review {
+            color: #d97706;
+        }
+
+        .keep {
+            color: #059669;
+        }
+
+        .small-note {
+            margin-top: 8px;
+            font-size: 11px;
+            color: #6b7280;
+            line-height: 1.5;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 14px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .checkbox-label input {
+            width: auto;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Recruit Auto Hide v5.2</h1>
+
+<p>
+    求人を HIDE_SAFE / HIDE_CAUTION / REVIEW / KEEP に分類します。<br>
+    en-hyoubanから評価・口コミ数・社員数を最大30件まで自動取得します。
+</p>
+
+<label for="filterModeSelect">필터 강도</label>
+<select id="filterModeSelect">
+    <option value="conservative">보수적 - 확실한 것만 제외</option>
+    <option value="normal" selected>보통 - 추천 기준</option>
+    <option value="aggressive">공격적 - 애매한 공고도 제외</option>
+</select>
+
+<label for="viewModeSelect">표시 그룹</label>
+<select id="viewModeSelect">
+    <option value="all" selected>전체 보기</option>
+    <option value="hide_safe">HIDE_SAFE만 보기</option>
+    <option value="hide_caution">HIDE_CAUTION만 보기</option>
+    <option value="review">REVIEW만 보기</option>
+    <option value="keep">KEEP만 보기</option>
+</select>
+
+<label for="maxClickCountSelect">처리 개수</label>
+<select id="maxClickCountSelect">
+    <option value="5">5개만 처리</option>
+    <option value="10" selected>10개만 처리</option>
+    <option value="20">20개만 처리</option>
+    <option value="9999">전체 처리</option>
+</select>
+
+<label class="checkbox-label">
+    <input type="checkbox" id="autoHideDuringScanCheckbox">
+    조사 중 위험 공고는 바로 興味なし 처리
+</label>
+
+<div class="small-note">
+    조건: 評価3.0以下 / 社員数80名以下 / 개발과 관련 없는 구인
+</div>
+
+<button id="scanBtn">분석하기</button>
+<button id="startBtn">HIDE_SAFE만 興味なし 처리</button>
+<button id="startCautionBtn">HIDE_CAUTION도 興味なし 처리</button>
+<button id="stopBtn">정지</button>
+
+<div id="status">대기 중</div>
+<div id="preview"></div>
+
+<script src="popup.js"></script>
+</body>
+</html>

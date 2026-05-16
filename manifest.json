@@ -1,0 +1,42 @@
+{
+  "manifest_version": 3,
+  "name": "Recruit Auto Hide",
+  "version": "5.3.1",
+  "description": "Recruit Agent求人を分類し、en-hyoubanから評価・口コミ数・社員数を自動取得します。",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "tabs",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://mypage.r-agent.com/*",
+    "https://*.r-agent.com/*",
+    "https://r-agent.com/*",
+    "https://*.recruit.co.jp/*",
+    "https://en-hyouban.com/*",
+    "https://www.en-hyouban.com/*",
+    "https://www.google.com/*",
+    "https://www.google.co.jp/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://mypage.r-agent.com/*",
+        "https://*.r-agent.com/*",
+        "https://r-agent.com/*",
+        "https://*.recruit.co.jp/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}
